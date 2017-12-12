@@ -3,7 +3,7 @@
   "description": "Dagcoin Funding Node",
   "author": "Dagcoin",
   "version": "0.2.4",
-  "main": "start.js",
+  "main": "fundingNode.js",
   "keywords": [
     "wallet",
     "headless",
