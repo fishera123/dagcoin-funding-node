@@ -9,13 +9,6 @@ function DiscoveryService() {
     this.db = require('byteballcore/db.js');
 }
 
-function connectWithDevice() {
-  return self.deviceManager.makeSureDeviceIsConnected(this.discoveryServicePairingCode).then((deviceAddress) => {
-    self.discoveryServiceDeviceAddress = deviceAddress;
-    return Promise.resolve();
-  });
-}
-
 DiscoveryService.prototype.messages = {
     startingTheBusiness: 'STARTING_THE_BUSINESS',
     aliveAndWell: 'ALIVE_AND_WELL',
@@ -28,7 +21,10 @@ DiscoveryService.prototype.messages = {
 DiscoveryService.prototype.init = function () {
     const self = this;
     if(conf.environment !== 'dev') {
-      connectWithDevice()
+      return self.deviceManager.makeSureDeviceIsConnected(this.discoveryServicePairingCode).then((deviceAddress) => {
+        self.discoveryServiceDeviceAddress = deviceAddress;
+        return Promise.resolve();
+      });
     }
     return new Promise((resolve, reject) => {
       this.http.get(`http://localhost:7000/getPairingCode`, (resp) => {
@@ -49,10 +45,13 @@ DiscoveryService.prototype.init = function () {
           }
         });
       }).on("error", (err) => {
-        reject(`NO RESPONSE FROM THE HUB ABOUT AVAILABLE DAGCOINS: ${err.message}`);
+        reject(`COULD NOT GET PAIRING CODE FROM DISCOVERY SERVICE: ${err.message}`);
       });
     }).then(function(code) {
-      connectWithDevice()
+      return self.deviceManager.makeSureDeviceIsConnected(code).then((deviceAddress) => {
+        self.discoveryServiceDeviceAddress = deviceAddress;
+        return Promise.resolve();
+      });
     });
 };
 
